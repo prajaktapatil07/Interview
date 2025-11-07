@@ -1,4 +1,4 @@
-What is the difference between Bash and Sh, and when should each be used?
+* What is the difference between Bash and Sh, and when should each be used?
 -> Sh is the basic, original shell that works on almost all systems. Bash is like an upgraded version of sh that has extra features to make scripting and using the command line easier. we use sh for simple scripts that need to run anywhere, and use Bash when we want more tools and work on Linux.
 Bash offers extra features that make scripting and command-line use easier and more powerful than the basic sh shell. These include:
 Command history: You can press the up arrow to see and reuse previous commands.
@@ -11,10 +11,92 @@ Command completion: Press Tab to auto-complete commands or filenames.
 String manipulation: Built-in ways to modify text inside scripts without external commands.
 These features help write shorter, cleaner, and more efficient scripts and make daily command-line work faster.
 
-How do you monitor disk usage and send an alert if it exceeds 80%?
-->
+* How do you monitor disk usage and send an alert if it exceeds 80%?
+-> I would use the df command to check disk usage percentage. Then I would write a shell script that compares the disk usage with an 80% threshold. If it exceeds 80%, the script sends an email alert to the admin. I would schedule this script to run hourly using a cron job by adding it to the crontab. This way, we get automatic alerts whenever disk usage crosses the threshold.
+
+#!/bin/bash
+DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
+if [ $DISK_USAGE -gt 80 ]; then
+  echo "Disk usage is $DISK_USAGE%" | mail -s "Alert" admin@example.com
+fi
+
+CRON JOB will be 0 * * * * /path/to/disk_alert.sh
+
 
 Write a Bash script to check the health of a Kubernetes Pod and Node.
+->
+#!/bin/bash
+
+# Function to check Pod health
+check_pod_health() {
+  POD_NAME=$1
+  NAMESPACE=$2
+  
+  echo "Checking Pod: $POD_NAME in namespace: $NAMESPACE"
+  
+  # Get pod status
+  POD_STATUS=$(kubectl get pod $POD_NAME -n $NAMESPACE -o jsonpath='{.status.phase}')
+  
+  if [ "$POD_STATUS" == "Running" ]; then
+    echo "Pod is Running ✓"
+  else
+    echo "Pod status is: $POD_STATUS ✗"
+  fi
+  
+  # Check if pod is ready
+  READY=$(kubectl get pod $POD_NAME -n $NAMESPACE -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+  
+  if [ "$READY" == "True" ]; then
+    echo "Pod is Ready ✓"
+  else
+    echo "Pod is Not Ready ✗"
+  fi
+}
+
+# Function to check Node health
+check_node_health() {
+  NODE_NAME=$1
+  
+  echo "Checking Node: $NODE_NAME"
+  
+  # Get node status
+  NODE_STATUS=$(kubectl get node $NODE_NAME -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+  
+  if [ "$NODE_STATUS" == "True" ]; then
+    echo "Node is Ready ✓"
+  else
+    echo "Node is Not Ready ✗"
+  fi
+  
+  # Check disk pressure
+  DISK_PRESSURE=$(kubectl get node $NODE_NAME -o jsonpath='{.status.conditions[?(@.type=="DiskPressure")].status}')
+  echo "Disk Pressure: $DISK_PRESSURE"
+  
+  # Check memory pressure
+  MEMORY_PRESSURE=$(kubectl get node $NODE_NAME -o jsonpath='{.status.conditions[?(@.type=="MemoryPressure")].status}')
+  echo "Memory Pressure: $MEMORY_PRESSURE"
+}
+
+# Main script
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <pod|node> <name> [namespace]"
+  echo "Example: $0 pod my-pod default"
+  echo "Example: $0 node node-1"
+  exit 1
+fi
+
+TYPE=$1
+NAME=$2
+NAMESPACE=${3:-default}
+
+if [ "$TYPE" == "pod" ]; then
+  check_pod_health $NAME $NAMESPACE
+elif [ "$TYPE" == "node" ]; then
+  check_node_health $NAME
+else
+  echo "Invalid type. Use 'pod' or 'node'"
+fi
+
 What does $?, $#, $@, and $0 mean in a shell script?
 How can you extract failed login attempts from /var/log/auth.log using awk or grep?
 How do you automatically kill a process consuming high CPU or memory?
