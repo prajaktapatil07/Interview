@@ -100,12 +100,18 @@ fi
 * How to open file in read only mode
 -> use -R, eg vim -R filename
 
+*
 
 What does $?, $#, $@, and $0 mean in a shell script?
 How can you extract failed login attempts from /var/log/auth.log using awk or grep?
 How do you automatically kill a process consuming high CPU or memory?
 How can you take user input dynamically inside a shell script?
-What is the difference between > and >> in file redirection?
+
+* What is the difference between > and >> in file redirection?
+> means it will replace the file content
+>> it will append the file content
+if we use > for multiple commands then only last commands output will be redirected to a file..if we use >> then the output will be append.
+
 How can you schedule a Bash script using cron to run every 5 minutes?
 What are sed and awk, and how do they differ in text processing?
 How do you find and delete files older than 10 days in a specific directory?
