@@ -97,6 +97,10 @@ else
   echo "Invalid type. Use 'pod' or 'node'"
 fi
 
+* How to open file in read only mode
+-> use -R, eg vim -R filename
+
+
 What does $?, $#, $@, and $0 mean in a shell script?
 How can you extract failed login attempts from /var/log/auth.log using awk or grep?
 How do you automatically kill a process consuming high CPU or memory?
